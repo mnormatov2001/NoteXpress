@@ -1,7 +1,7 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import { useScrollTop } from "@/hooks/use-scroll-top";
@@ -12,6 +12,7 @@ import { Logo } from "./logo";
 import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
+  const router = useRouter();
   const session = useSession();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/documents";
@@ -48,6 +49,15 @@ export const Navbar = () => {
           <>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/documents">Enter NoteXpress</Link>
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                router.push("/api/auth/federated-logout");
+                signOut({ callbackUrl: "/", redirect: false });
+              }}
+            >
+              Sing Out
             </Button>
             {/* <UserButton
               afterSignOutUrl="/"
