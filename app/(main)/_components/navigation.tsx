@@ -4,9 +4,16 @@ import { ElementRef, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
-import { ChevronsLeft, MenuIcon } from "lucide-react";
+import {
+  ChevronsLeft,
+  MenuIcon,
+  PlusCircle,
+  Search,
+  Settings
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
+import { Item } from "./item";
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -115,6 +122,22 @@ export const Navigation = () => {
         </div>
         <div>
           <UserItem />
+          <Item
+            label="Search"
+            icon={Search}
+            isSearch
+            onClick={() => {}} // TODO: implement this function
+          />
+          <Item
+            label="Settings"
+            icon={Settings}
+            onClick={() => {}} // TODO: implement this function
+          />
+          <Item
+            onClick={() => {}}
+            label="New page"
+            icon={PlusCircle} // TODO: implement this function
+          />
         </div>
         <div
           onMouseDown={handleMouseDown}
