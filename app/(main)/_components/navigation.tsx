@@ -6,6 +6,7 @@ import { useMediaQuery } from "usehooks-ts";
 
 import { ChevronsLeft, MenuIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UserItem } from "./user-item";
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -111,6 +112,9 @@ export const Navigation = () => {
           )}
         >
           <ChevronsLeft className="h-6 w-6" />
+        </div>
+        <div>
+          <UserItem />
         </div>
         <div
           onMouseDown={handleMouseDown}
