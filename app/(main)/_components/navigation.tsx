@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
 import { Item } from "./item";
+import { DocumentsList } from "./documents-list";
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -138,6 +139,9 @@ export const Navigation = () => {
             label="New page"
             icon={PlusCircle} // TODO: implement this function
           />
+        </div>
+        <div className="mt-4">
+          <DocumentsList />
         </div>
         <div
           onMouseDown={handleMouseDown}
