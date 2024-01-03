@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
       secret: process.env.NEXTAUTH_SECRET,
     });
 
-    if (!token?.id_token)
+    if (!token?.idToken)
       throw new Error(
         "Without an id_token the user won't be" +
           "redirected back from the IdP after logout."
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const url =
       process.env.END_SESSION_ENDPOINT +
       "?id_token_hint=" +
-      token.id_token +
+      token.idToken +
       "&post_logout_redirect_uri=" +
       process.env.POST_LOGOUT_REDIRECT_URI;
 

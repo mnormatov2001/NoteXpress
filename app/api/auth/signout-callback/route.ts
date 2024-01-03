@@ -6,8 +6,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const callbackUrl = searchParams.get("callbackUrl");
     if (callbackUrl) {
-      const response = await fetch(callbackUrl);
-      console.log(response);
+      await fetch(callbackUrl);
     }
   } catch (error) {
     console.error(error);
