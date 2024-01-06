@@ -1,34 +1,42 @@
 "use client";
 
-import type { Document } from "@/lib/data-models";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Item } from "./item";
 import { FileIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDocuments } from "@/hooks/use-documents";
+import { Note, NotesClient } from "@/lib/notes-client";
 
 interface DocumentListProps {
   parentDocumentId?: string;
   level?: number;
   data?: Document;
+  client: NotesClient;
+  items: Record<string, Note[]>;
+  setItems: Dispatch<SetStateAction<Record<string, Note[]>>>;
 }
 
 export const DocumentsList = ({
-  parentDocumentId,
+  parentDocumentId = "00000000-0000-0000-0000-000000000000",
   level = 0,
+  client,
+  items,
+  setItems,
 }: DocumentListProps) => {
   const params = useParams();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [status, getChildren] = useDocuments();
-  const [documents, setDocuments] = useState<Document[]>();
   const [updated, setUpdated] = useState(false); // TODO: Implement updating documents list
 
   useEffect(() => {
-    if (!documents && status === "ready") {
-      getChildren(parentDocumentId).then(setDocuments);
+    if (!items[parentDocumentId] && client) {
+      client.getChildren(parentDocumentId).then((res) => {
+        setItems((prevItems) => ({
+          ...prevItems,
+          [parentDocumentId]: res,
+        }));
+      });
     }
-  }, [status, parentDocumentId]);
+  }, []);
 
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({
@@ -37,7 +45,7 @@ export const DocumentsList = ({
     }));
   };
 
-  if (documents === undefined) {
+  if (!items[parentDocumentId]) {
     return (
       <>
         <Item.Skeleton level={level} />
@@ -65,7 +73,7 @@ export const DocumentsList = ({
       >
         No pages inside
       </p>
-      {documents.map((document) => (
+      {items[parentDocumentId].map((document) => (
         <div key={document.id}>
           <Item
             id={document.id}
@@ -79,7 +87,13 @@ export const DocumentsList = ({
             expanded={expanded[document.id]}
           />
           {expanded[document.id] && (
-            <DocumentsList parentDocumentId={document.id} level={level + 1} />
+            <DocumentsList
+              items={items}
+              setItems={setItems}
+              client={client}
+              parentDocumentId={document.id}
+              level={level + 1}
+            />
           )}
         </div>
       ))}

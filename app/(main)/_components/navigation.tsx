@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
 import { Item } from "./item";
 import { DocumentsList } from "./documents-list";
+import { Note, NotesClient } from '@/lib/notes-client'
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -25,6 +26,12 @@ export const Navigation = () => {
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  const [client, setClient] = useState<NotesClient>();
+  const [items, setItems] = useState<Record<string, Note[]>>({});
+
+  useEffect(() => {
+    setClient(new NotesClient("https://localhost:7090"));
+  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -141,12 +148,16 @@ export const Navigation = () => {
           />
         </div>
         <div className="mt-4">
-          <DocumentsList />
+          {client ? (
+            <DocumentsList items={items} setItems={setItems} client={client} />
+          ) : (
+            <Item.Skeleton />
+          )}
         </div>
         <div
           onMouseDown={handleMouseDown}
           onClick={resetWidth}
-          className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0" 
+          className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
         />
       </aside>
       <div
@@ -158,7 +169,13 @@ export const Navigation = () => {
         )}
       >
         <nav className="bg-transparent px-3 py-2 w-full">
-            {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
+          {isCollapsed && (
+            <MenuIcon
+              onClick={resetWidth}
+              role="button"
+              className="h-6 w-6 text-muted-foreground"
+            />
+          )}
         </nav>
       </div>
     </>
