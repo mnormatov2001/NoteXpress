@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Item } from "./item";
 import { FileIcon } from "lucide-react";
@@ -10,33 +10,43 @@ import { Note, NotesClient } from "@/lib/notes-client";
 interface DocumentListProps {
   parentDocumentId?: string;
   level?: number;
-  data?: Document;
+  data?: Note;
   client: NotesClient;
-  items: Record<string, Note[]>;
-  setItems: Dispatch<SetStateAction<Record<string, Note[]>>>;
+  documents?: Note[];
+  setDocuments: Dispatch<SetStateAction<Note[] | undefined>>;
+  onUpdateItems?: (id: string) => void;
 }
 
 export const DocumentsList = ({
   parentDocumentId = "00000000-0000-0000-0000-000000000000",
   level = 0,
   client,
-  items,
-  setItems,
+  documents,
+  setDocuments,
+  onUpdateItems,
 }: DocumentListProps) => {
+  const router = useRouter();
   const params = useParams();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [updated, setUpdated] = useState(false); // TODO: Implement updating documents list
+  const [items, setItems] = useState<Note[]>();
 
   useEffect(() => {
-    if (!items[parentDocumentId] && client) {
-      client.getChildren(parentDocumentId).then((res) => {
-        setItems((prevItems) => ({
-          ...prevItems,
-          [parentDocumentId]: res,
-        }));
-      });
+    if (!documents?.some((d) => d.parentNoteId === parentDocumentId)) {
+      client.getChildren(parentDocumentId).then((notes) => {
+        setDocuments((prevDocuments) => (
+          prevDocuments ? [...prevDocuments, ...notes] : notes
+        ))
+      })
     }
   }, []);
+
+  useEffect(() => {
+    const array = documents
+      ?.filter((d) => d.parentNoteId === parentDocumentId)
+      .sort((a, b) => (a.creationDate < b.creationDate ? -1 : 1));
+    setItems(array);
+  }, [documents]);
 
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({
@@ -45,7 +55,7 @@ export const DocumentsList = ({
     }));
   };
 
-  if (!items[parentDocumentId]) {
+  if (!items) {
     return (
       <>
         <Item.Skeleton level={level} />
@@ -73,11 +83,11 @@ export const DocumentsList = ({
       >
         No pages inside
       </p>
-      {items[parentDocumentId].map((document) => (
+      {items.map((document) => (
         <div key={document.id}>
           <Item
             id={document.id}
-            onClick={() => {}} // TODO: Implement redirecting to document's page
+            onClick={() => {router.push(`/documents/${document.id}`)}}
             label={document.title}
             icon={FileIcon}
             documentIcon={document.icon}
@@ -85,14 +95,17 @@ export const DocumentsList = ({
             level={level}
             onExpand={() => onExpand(document.id)}
             expanded={expanded[document.id]}
+            client={client}
+            onUpdateItems={onUpdateItems}
           />
           {expanded[document.id] && (
             <DocumentsList
-              items={items}
-              setItems={setItems}
               client={client}
               parentDocumentId={document.id}
               level={level + 1}
+              documents={documents}
+              setDocuments={setDocuments}
+              onUpdateItems={onUpdateItems}
             />
           )}
         </div>

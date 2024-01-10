@@ -19,18 +19,20 @@ import {
   DropdownMenuContent,
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
+import { NotesClient } from '@/lib/notes-client'
 
 interface ItemProps {
   id?: string;
   documentIcon?: string;
   active?: boolean;
   expanded?: boolean;
-  isSearch?: boolean;
   level?: number;
   onExpand?: () => void;
   label: string;
   onClick?: () => void;
   icon: LucideIcon;
+  client?: NotesClient;
+  onUpdateItems?: (id: string) => void;
 };
 
 export const Item = ({
@@ -43,31 +45,24 @@ export const Item = ({
   level = 0,
   onExpand,
   expanded,
+  client,
+  onUpdateItems,
 }: ItemProps) => {
   const router = useRouter();
 
-  const createNote = async ({
-    title,
-    parentDocument,
-  }: {
-    title: string;
-    parentDocument: string;
-  }) => ""; // TODO: implement this function
-
-  const archiveNote = async ({ id }: { id: string }) => ""; // TODO: implement this function
-
-  const onArchive = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
+  const onArchive = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation();
-    if (!id) return;
-    const promise = archiveNote({ id })
-      .then(() => router.push("/documents"))
+    if (!id || !client) return;
+    const promise = client.archiveNote(id);
+    router.push("/documents");
 
     toast.promise(promise, {
       loading: "Moving to trash...",
-      success: "Note moved to trash!",
-      error: "Failed to archive note."
+      success: (data) => {
+        onUpdateItems && onUpdateItems(data);
+        return "Note moved to trash!";
+      },
+      error: "Failed to archive note.",
     });
   };
 
@@ -78,12 +73,11 @@ export const Item = ({
     onExpand?.();
   };
 
-  const onCreate = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
+  const onCreate = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation();
-    if (!id) return;
-    const promise = createNote({ title: "Untitled", parentDocument: id })
+    if (!id || !client) return;
+    const promise = client
+      .createNote({ title: "Untitled", parentNoteId: id })
       .then((documentId) => {
         if (!expanded) {
           onExpand?.();

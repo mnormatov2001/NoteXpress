@@ -1,12 +1,13 @@
 "use client";
 
 import { ElementRef, useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
 import {
   ChevronsLeft,
   MenuIcon,
+  Plus,
   PlusCircle,
   Search,
   Settings
@@ -16,18 +17,64 @@ import { UserItem } from "./user-item";
 import { Item } from "./item";
 import { DocumentsList } from "./documents-list";
 import { Note, NotesClient } from '@/lib/notes-client'
+import { toast } from 'sonner'
 
 export const Navigation = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");
   
+  const router = useRouter();
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const [client, setClient] = useState<NotesClient>();
-  const [items, setItems] = useState<Record<string, Note[]>>({});
+  const [documents, SetDocuments] = useState<Note[]>();
+
+  const handleUpdateItems = (id: string) => {
+    const recursiveRemove = (items: Note[], idToDelete: string) => {
+      const index = items.findIndex((n) => n.id === idToDelete);
+      if (index < 0) return;
+
+      items.splice(index, 1);
+      const toDelete = items.filter((note) => note.parentNoteId === idToDelete);
+      for (const note of toDelete) {
+        recursiveRemove(items, note.id);
+      }
+    };
+    if (!documents) return;
+
+    const newDocuments = [...documents];
+    recursiveRemove(newDocuments, id);
+    if (!client) {
+      SetDocuments(newDocuments);
+    } else {
+      client?.getNote(id).then((note) => {
+        if (!note || note.isArchived === true) {
+          SetDocuments(newDocuments);
+        } else {
+          client.getChildren(note.id).then((notes) => {
+            SetDocuments([...newDocuments, ...notes]);
+          });
+        }
+      });
+    }
+  };
+
+  const handleCreate = () => {
+    if (!client) return;
+    const promise = client.createNote({
+        title: "Untitled",
+      })
+      .then((id) => router.push(`/documents/${id}`));
+
+    toast.promise(promise, {
+      loading: "Creating a new note...",
+      success: "New note created!",
+      error: "Failed to create a new note.",
+    });
+  };
 
   useEffect(() => {
     setClient(new NotesClient("https://localhost:7090"));
@@ -118,7 +165,7 @@ export const Navigation = () => {
           isMobile && "w-0"
         )}
       >
-      <div
+        <div
           onClick={collapse}
           role="button"
           className={cn(
@@ -133,7 +180,6 @@ export const Navigation = () => {
           <Item
             label="Search"
             icon={Search}
-            isSearch
             onClick={() => {}} // TODO: implement this function
           />
           <Item
@@ -142,17 +188,25 @@ export const Navigation = () => {
             onClick={() => {}} // TODO: implement this function
           />
           <Item
-            onClick={() => {}}
+            onClick={handleCreate}
             label="New page"
-            icon={PlusCircle} // TODO: implement this function
+            icon={PlusCircle}
           />
         </div>
         <div className="mt-4">
-          {client ? (
-            <DocumentsList items={items} setItems={setItems} client={client} />
-          ) : (
-            <Item.Skeleton />
+          {client && (
+            <DocumentsList
+              documents={documents}
+              setDocuments={SetDocuments}
+              client={client}
+              onUpdateItems={handleUpdateItems}
+            />
           )}
+          <Item
+            onClick={handleCreate}
+            icon={Plus}
+            label="Add a page"
+          />
         </div>
         <div
           onMouseDown={handleMouseDown}

@@ -246,6 +246,115 @@ export class NotesClient extends NotesClientBase {
   }
 
   /**
+   * Archives the note
+   * @param id Note id (guid)
+   */
+  archiveNote(id: string): Promise<string> {
+    let url_ = this.baseUrl + "/notes/archive?";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ += "id=" + encodeURIComponent("" + id) + "&";
+    url_ = url_.replace(/[?&]$/, "");
+
+    let options_: RequestInit = {
+      method: "PUT",
+      headers: {
+        Accept: "Application/json",
+      },
+    };
+
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processArchiveNote(_response);
+      });
+  }
+
+  protected processArchiveNote(response: Response): Promise<string> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+    }
+    if (status === 401) {
+      return response.text().then((_responseText) => {
+        let result401: any = null;
+        result401 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as ProblemDetails);
+        return throwException(
+          "The user is unauthorized",
+          status,
+          _responseText,
+          _headers,
+          result401
+        );
+      });
+    } else if (status === 404) {
+      return response.text().then((_responseText) => {
+        let result404: any = null;
+        result404 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as ProblemDetails);
+        return throwException(
+          "The requested note is not found",
+          status,
+          _responseText,
+          _headers,
+          result404
+        );
+      });
+    } else if (status === 400) {
+      return response.text().then((_responseText) => {
+        let result400: any = null;
+        result400 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as ProblemDetails);
+        return throwException(
+          "The request is not validated",
+          status,
+          _responseText,
+          _headers,
+          result400
+        );
+      });
+    } else if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(_responseText, this.jsonParseReviver) as string);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
+    }
+    return Promise.resolve<string>(null as any);
+  }
+
+  /**
    * Updates the note
    * @param body (optional)
    */
@@ -734,8 +843,8 @@ export interface Note {
   parentNoteId?: string;
   title: string;
   content?: string;
-  creationDate?: Date;
-  editDate?: Date;
+  creationDate: Date;
+  editDate: Date;
   icon?: string;
   coverImage?: string;
   isArchived?: boolean;
