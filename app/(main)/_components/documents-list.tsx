@@ -14,7 +14,7 @@ interface DocumentListProps {
   client: NotesClient;
   documents?: Note[];
   setDocuments: Dispatch<SetStateAction<Note[] | undefined>>;
-  onUpdateItems?: (id: string) => void;
+  onUpdateItems?: (id?: string) => void;
 }
 
 export const DocumentsList = ({

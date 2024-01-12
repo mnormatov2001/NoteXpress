@@ -32,7 +32,7 @@ interface ItemProps {
   onClick?: () => void;
   icon: LucideIcon;
   client?: NotesClient;
-  onUpdateItems?: (id: string) => void;
+  onUpdateItems?: (id?: string) => void;
 };
 
 export const Item = ({
@@ -58,8 +58,8 @@ export const Item = ({
 
     toast.promise(promise, {
       loading: "Moving to trash...",
-      success: (data) => {
-        onUpdateItems && onUpdateItems(data);
+      success: (noteId) => {
+        onUpdateItems && onUpdateItems(noteId);
         return "Note moved to trash!";
       },
       error: "Failed to archive note.",
