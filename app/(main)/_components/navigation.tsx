@@ -10,7 +10,8 @@ import {
   Plus,
   PlusCircle,
   Search,
-  Settings
+  Settings,
+  Trash
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
@@ -18,6 +19,8 @@ import { Item } from "./item";
 import { DocumentsList } from "./documents-list";
 import { Note, NotesClient } from '@/lib/notes-client'
 import { toast } from 'sonner'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { TrashBox } from './trash-box'
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -32,7 +35,9 @@ export const Navigation = () => {
   const [client, setClient] = useState<NotesClient>();
   const [documents, SetDocuments] = useState<Note[]>();
 
-  const handleUpdateItems = (id: string) => {
+  const handleUpdateItems = (
+    id: string = "00000000-0000-0000-0000-000000000000"
+  ) => {
     const recursiveRemove = (items: Note[], idToDelete: string) => {
       const index = items.findIndex((n) => n.id === idToDelete);
       if (index < 0) return;
@@ -43,7 +48,13 @@ export const Navigation = () => {
         recursiveRemove(items, note.id);
       }
     };
+
     if (!documents) return;
+
+    if (id === "00000000-0000-0000-0000-000000000000") {
+      client?.getAllNotes().then(SetDocuments);
+      return;
+    }
 
     const newDocuments = [...documents];
     recursiveRemove(newDocuments, id);
@@ -55,7 +66,7 @@ export const Navigation = () => {
           SetDocuments(newDocuments);
         } else {
           client.getChildren(note.id).then((notes) => {
-            SetDocuments([...newDocuments, ...notes]);
+            SetDocuments([...newDocuments, note, ...notes]);
           });
         }
       });
@@ -207,6 +218,22 @@ export const Navigation = () => {
             icon={Plus}
             label="Add a page"
           />
+          <Popover>
+            <PopoverTrigger className="w-full mt-4">
+              <Item label="Trash" icon={Trash} />
+            </PopoverTrigger>
+            <PopoverContent
+              className="p-0 w-72"
+              side={isMobile ? "bottom" : "right"}
+            >
+              {client && (
+                <TrashBox
+                  client={client}
+                  onUpdateItems={handleUpdateItems}
+                />
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
         <div
           onMouseDown={handleMouseDown}
