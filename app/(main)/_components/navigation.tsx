@@ -21,6 +21,8 @@ import { Note, NotesClient } from '@/lib/notes-client'
 import { toast } from 'sonner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { TrashBox } from './trash-box'
+import { SearchCommand } from '@/components/ui/search-command'
+import { useSearch } from '@/hooks/use-search'
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -34,6 +36,12 @@ export const Navigation = () => {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const [client, setClient] = useState<NotesClient>();
   const [documents, SetDocuments] = useState<Note[]>();
+  const search = useSearch();
+
+  const onOpenSearch = () => {
+    handleUpdateItems();
+    search.onOpen();
+  }
 
   const handleUpdateItems = (
     id: string = "00000000-0000-0000-0000-000000000000"
@@ -168,6 +176,10 @@ export const Navigation = () => {
 
   return (
     <>
+      <SearchCommand
+        documents={documents}
+        onUpdateItems={handleUpdateItems}
+      />
       <aside
         ref={sidebarRef}
         className={cn(
@@ -190,8 +202,9 @@ export const Navigation = () => {
           <UserItem />
           <Item
             label="Search"
+            isSearch
             icon={Search}
-            onClick={() => {}} // TODO: implement this function
+            onClick={onOpenSearch}
           />
           <Item
             label="Settings"
