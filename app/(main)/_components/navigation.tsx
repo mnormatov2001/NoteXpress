@@ -23,6 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { TrashBox } from './trash-box'
 import { SearchCommand } from '@/components/ui/search-command'
 import { useSearch } from '@/hooks/use-search'
+import { useSettings } from '@/hooks/use-settings'
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -37,6 +38,7 @@ export const Navigation = () => {
   const [client, setClient] = useState<NotesClient>();
   const [documents, SetDocuments] = useState<Note[]>();
   const search = useSearch();
+  const settings = useSettings();
 
   const onOpenSearch = () => {
     handleUpdateItems();
@@ -209,7 +211,7 @@ export const Navigation = () => {
           <Item
             label="Settings"
             icon={Settings}
-            onClick={() => {}} // TODO: implement this function
+            onClick={settings.onOpen}
           />
           <Item
             onClick={handleCreate}
