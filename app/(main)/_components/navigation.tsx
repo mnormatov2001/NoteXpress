@@ -1,7 +1,7 @@
 "use client";
 
 import { ElementRef, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
 import {
@@ -17,13 +17,18 @@ import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
 import { Item } from "./item";
 import { DocumentsList } from "./documents-list";
-import { Note, NotesClient } from '@/lib/notes-client'
-import { toast } from 'sonner'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { TrashBox } from './trash-box'
-import { SearchCommand } from '@/components/ui/search-command'
-import { useSearch } from '@/hooks/use-search'
-import { useSettings } from '@/hooks/use-settings'
+import { toast } from "sonner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { TrashBox } from "./trash-box";
+import { SearchCommand } from "@/components/ui/search-command";
+import { useSearch } from "@/hooks/use-search";
+import { useSettings } from "@/hooks/use-settings";
+import { Navbar } from "./navbar";
+import { useNavigationContext } from "@/contexts/navigation-context";
 
 export const Navigation = () => {
   const pathname = usePathname();
@@ -35,60 +40,26 @@ export const Navigation = () => {
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const [client, setClient] = useState<NotesClient>();
-  const [documents, SetDocuments] = useState<Note[]>();
   const search = useSearch();
   const settings = useSettings();
+  const params = useParams();
+
+  const { notesClient, onUpdateNavigationDocumentsItems } =
+    useNavigationContext();
 
   const onOpenSearch = () => {
-    handleUpdateItems();
+    onUpdateNavigationDocumentsItems();
     search.onOpen();
   }
 
-  const handleUpdateItems = (
-    id: string = "00000000-0000-0000-0000-000000000000"
-  ) => {
-    const recursiveRemove = (items: Note[], idToDelete: string) => {
-      const index = items.findIndex((n) => n.id === idToDelete);
-      if (index < 0) return;
-
-      items.splice(index, 1);
-      const toDelete = items.filter((note) => note.parentNoteId === idToDelete);
-      for (const note of toDelete) {
-        recursiveRemove(items, note.id);
-      }
-    };
-
-    if (!documents) return;
-
-    if (id === "00000000-0000-0000-0000-000000000000") {
-      client?.getAllNotes().then(SetDocuments);
-      return;
-    }
-
-    const newDocuments = [...documents];
-    recursiveRemove(newDocuments, id);
-    if (!client) {
-      SetDocuments(newDocuments);
-    } else {
-      client?.getNote(id).then((note) => {
-        if (!note || note.isArchived === true) {
-          SetDocuments(newDocuments);
-        } else {
-          client.getChildren(note.id).then((notes) => {
-            SetDocuments([...newDocuments, note, ...notes]);
-          });
-        }
-      });
-    }
-  };
-
   const handleCreate = () => {
-    if (!client) return;
-    const promise = client.createNote({
+    if (!notesClient) return;
+    const promise = notesClient.createNote({
         title: "Untitled",
-      })
-      .then((id) => router.push(`/documents/${id}`));
+      }).then((id) => {
+        onUpdateNavigationDocumentsItems(id);
+        router.push(`/documents/${id}`)
+      });
 
     toast.promise(promise, {
       loading: "Creating a new note...",
@@ -96,10 +67,6 @@ export const Navigation = () => {
       error: "Failed to create a new note.",
     });
   };
-
-  useEffect(() => {
-    setClient(new NotesClient("https://localhost:7090"));
-  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -178,10 +145,7 @@ export const Navigation = () => {
 
   return (
     <>
-      <SearchCommand
-        documents={documents}
-        onUpdateItems={handleUpdateItems}
-      />
+      <SearchCommand/>
       <aside
         ref={sidebarRef}
         className={cn(
@@ -220,13 +184,8 @@ export const Navigation = () => {
           />
         </div>
         <div className="mt-4">
-          {client && (
-            <DocumentsList
-              documents={documents}
-              setDocuments={SetDocuments}
-              client={client}
-              onUpdateItems={handleUpdateItems}
-            />
+          {notesClient && (
+            <DocumentsList />
           )}
           <Item
             onClick={handleCreate}
@@ -241,11 +200,8 @@ export const Navigation = () => {
               className="p-0 w-72"
               side={isMobile ? "bottom" : "right"}
             >
-              {client && (
-                <TrashBox
-                  client={client}
-                  onUpdateItems={handleUpdateItems}
-                />
+              {notesClient && (
+                <TrashBox />
               )}
             </PopoverContent>
           </Popover>
@@ -264,15 +220,21 @@ export const Navigation = () => {
           isMobile && "left-0 w-full"
         )}
       >
-        <nav className="bg-transparent px-3 py-2 w-full">
-          {isCollapsed && (
-            <MenuIcon
-              onClick={resetWidth}
-              role="button"
-              className="h-6 w-6 text-muted-foreground"
-            />
-          )}
-        </nav>
+        {!!params.documentId && notesClient ? (
+          <Navbar
+            isCollapsed={isCollapsed}
+            onResetWidth={resetWidth}
+          />
+        ) : (
+          <nav className="bg-transparent px-3 py-2 w-full">
+            {isCollapsed && (
+              <MenuIcon
+                onClick={resetWidth}
+                role="button"
+                className="h-6 w-6 text-muted-foreground"
+              />
+            )}
+        </nav>)}
       </div>
     </>
   );

@@ -19,7 +19,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
-import { NotesClient } from '@/lib/notes-client'
+import { useNavigationContext } from "@/contexts/navigation-context";
 
 interface ItemProps {
   id?: string;
@@ -32,8 +32,6 @@ interface ItemProps {
   isSearch?: boolean;
   onClick?: () => void;
   icon: LucideIcon;
-  client?: NotesClient;
-  onUpdateItems?: (id?: string) => void;
 };
 
 export const Item = ({
@@ -47,23 +45,22 @@ export const Item = ({
   isSearch,
   onExpand,
   expanded,
-  client,
-  onUpdateItems,
 }: ItemProps) => {
   const router = useRouter();
+  const { notesClient, onUpdateNavigationDocumentsItems } =
+    useNavigationContext();
 
   const onArchive = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation();
-    if (!id || !client) return;
-    const promise = client.archiveNote(id);
+    if (!id || !notesClient) return;
+    const promise = notesClient.archiveNote(id).then((id) => {
+      onUpdateNavigationDocumentsItems?.(id);
+    });
     router.push("/documents");
 
     toast.promise(promise, {
       loading: "Moving to trash...",
-      success: (noteId) => {
-        onUpdateItems && onUpdateItems(noteId);
-        return "Note moved to trash!";
-      },
+      success: "Note moved to trash!",
       error: "Failed to archive note.",
     });
   };
@@ -77,10 +74,11 @@ export const Item = ({
 
   const onCreate = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation();
-    if (!id || !client) return;
-    const promise = client
+    if (!id || !notesClient) return;
+    const promise = notesClient
       .createNote({ title: "Untitled", parentNoteId: id })
       .then((documentId) => {
+        onUpdateNavigationDocumentsItems(documentId);
         if (!expanded) {
           onExpand?.();
         }
@@ -90,7 +88,7 @@ export const Item = ({
     toast.promise(promise, {
       loading: "Creating a new note...",
       success: "New note created!",
-      error: "Failed to create a new note."
+      error: "Failed to create a new note.",
     });
   };
 

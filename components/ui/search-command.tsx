@@ -13,14 +13,10 @@ import {
   CommandList
 } from "@/components/ui/command";
 import { useSearch } from "@/hooks/use-search";
-import { Note } from '@/lib/notes-client';
+import { useNavigationContext } from '@/contexts/navigation-context'
 
-interface SearchCommandProps {
-  documents?: Note[];
-  onUpdateItems?: () => void;
-}
-
-export const SearchCommand = ({ documents, onUpdateItems }: SearchCommandProps) => {
+export const SearchCommand = () => {
+  const {navigationDocuments: documents, onUpdateNavigationDocumentsItems: onUpdateItems} = useNavigationContext();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 

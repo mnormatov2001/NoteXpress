@@ -8,27 +8,23 @@ import { toast } from "sonner";
 import { Spinner } from "@/components/spinner";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
-import { Note, NotesClient } from '@/lib/notes-client'
+import { Note } from '@/lib/notes-client'
+import { useNavigationContext } from '@/contexts/navigation-context'
 
-interface TrashBoxProps {
-  client: NotesClient
-  onUpdateItems?: (id?: string) => void;
-}
-
-export const TrashBox = ({ client, onUpdateItems }: TrashBoxProps) => {
+export const TrashBox = () => {
+  const { notesClient, onUpdateNavigationDocumentsItems } = useNavigationContext();
+  const [trashDocuments, setTrashDocuments] = useState<Note[]>();
   const router = useRouter();
   const params = useParams();
-  const [documents, setDocuments] = useState<Note[]>();
-
   const [search, setSearch] = useState("");
 
-  const filteredDocuments = documents?.filter((document) => {
+  const filteredDocuments = trashDocuments?.filter((document) => {
     return document.title.toLowerCase().includes(search.toLowerCase());
   });
 
   useEffect(() => {
-    client.getNotesTrash().then(setDocuments);
-  }, []);
+    notesClient?.getNotesTrash().then(setTrashDocuments);
+  }, [notesClient]);
 
   const onClick = (documentId: string) => {
     router.push(`/documents/${documentId}`);
@@ -38,47 +34,47 @@ export const TrashBox = ({ client, onUpdateItems }: TrashBoxProps) => {
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     documentId: string
   ) => {
+    event.stopPropagation();
+    if (!notesClient) return;
+
     const recursiveRemove = (items: Note[], idToDelete: string) => {
       const index = items.findIndex((n) => n.id === idToDelete);
       if (index < 0) return;
 
       items.splice(index, 1);
-      const toDelete = items.filter((note) => note.parentNoteId === idToDelete);
+      const toDelete = items.filter((item) => item.parentNoteId === idToDelete);
       for (const note of toDelete) {
         recursiveRemove(items, note.id);
       }
     };
 
-    event.stopPropagation();
-    const promise = client.restoreNote(documentId);
+    const promise = notesClient.restoreNote(documentId).then((id) => {
+      if (trashDocuments) {
+        const newDocuments = [...trashDocuments];
+        recursiveRemove(newDocuments, id);
+        setTrashDocuments(newDocuments);
+      }
 
+      onUpdateNavigationDocumentsItems(id);
+    });
     toast.promise(promise, {
       loading: "Restoring note...",
-      success: (id) => {
-        if (documents) {
-          const newDocuments = [...documents];
-          recursiveRemove(newDocuments, id);
-          setDocuments(newDocuments);
-        }
-
-        onUpdateItems && onUpdateItems(id);
-        return "Note restored!";
-      },
+      success: "Note restored!",
       error: " Failed to restore note.",
     });
   };
 
   const onRemove = (documentId: string) => {
-    const promise = client.deleteNote(documentId);
+    if (!notesClient) return;
+
+    const promise = notesClient.deleteNote(documentId).then((id) => {
+      const newDocuments = trashDocuments?.filter((d) => d.id !== id);
+      setTrashDocuments(newDocuments);
+    });
 
     toast.promise(promise, {
       loading: "Deleting note...",
-      success: (id) => {
-        const newDocuments = documents?.filter((d) => d.id !== id);
-        setDocuments(newDocuments);
-
-        return "Note deleted!";
-      },
+      success: "Note deleted!",
       error: " Failed to delete note.",
     });
 
@@ -87,7 +83,7 @@ export const TrashBox = ({ client, onUpdateItems }: TrashBoxProps) => {
     }
   };
 
-  if (documents === undefined) {
+  if (trashDocuments === undefined) {
     return (
       <div className="h-full flex items-center justify-center p-4">
         <Spinner size="lg" />

@@ -4,6 +4,7 @@
 // </auto-generated>
 //----------------------
 
+import { debounce } from "lodash";
 import { NotesClientBase } from "./notes-client-base";
 
 /* tslint:disable */
@@ -1022,6 +1023,10 @@ export class NotesClient extends NotesClientBase {
     }
     return Promise.resolve<Note[]>(null as any);
   }
+
+  debouncedUpdateNote = debounce(async (note: UpdateNoteDto) => {
+    return await this.updateNote(note);
+  }, 700);
 }
 
 export interface CreateNoteDto {

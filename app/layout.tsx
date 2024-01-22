@@ -5,6 +5,7 @@ import { SessionProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ModalProvider } from '@/components/providers/modal-provider';
 import { Toaster } from "sonner";
+import { EdgeStoreProvider } from '@/lib/edgestore'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -45,7 +46,9 @@ export default function RootLayout({
           >
             <Toaster />
             <ModalProvider />
-            {children}
+            <EdgeStoreProvider>
+              {children}
+            </EdgeStoreProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>

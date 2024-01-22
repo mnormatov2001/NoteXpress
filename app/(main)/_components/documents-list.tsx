@@ -1,52 +1,51 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Item } from "./item";
 import { FileIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Note, NotesClient } from "@/lib/notes-client";
+
+import { Note } from "@/lib/notes-client";
+import { useNavigationContext } from "@/contexts/navigation-context";
 
 interface DocumentListProps {
   parentDocumentId?: string;
   level?: number;
-  data?: Note;
-  client: NotesClient;
-  documents?: Note[];
-  setDocuments: Dispatch<SetStateAction<Note[] | undefined>>;
-  onUpdateItems?: (id?: string) => void;
 }
 
 export const DocumentsList = ({
   parentDocumentId = "00000000-0000-0000-0000-000000000000",
   level = 0,
-  client,
-  documents,
-  setDocuments,
-  onUpdateItems,
 }: DocumentListProps) => {
+  const {
+    notesClient,
+    navigationDocuments,
+    setNavigationDocuments,
+  } = useNavigationContext();
   const router = useRouter();
   const params = useParams();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [updated, setUpdated] = useState(false); // TODO: Implement updating documents list
   const [items, setItems] = useState<Note[]>();
 
   useEffect(() => {
-    if (!documents?.some((d) => d.parentNoteId === parentDocumentId)) {
-      client.getChildren(parentDocumentId).then((notes) => {
-        setDocuments((prevDocuments) => (
-          prevDocuments ? [...prevDocuments, ...notes] : notes
-        ))
-      })
+    if (
+      !navigationDocuments?.some((d) => d.parentNoteId === parentDocumentId)
+    ) {
+      notesClient?.getChildren(parentDocumentId).then((notes) => {
+        setNavigationDocuments(
+          navigationDocuments ? [...navigationDocuments, ...notes] : notes
+        );
+      });
     }
   }, []);
 
   useEffect(() => {
-    const array = documents
-      ?.filter((d) => d.parentNoteId === parentDocumentId)
+    const documents = navigationDocuments
+      ?.filter((item) => item.parentNoteId === parentDocumentId)
       .sort((a, b) => (a.creationDate < b.creationDate ? -1 : 1));
-    setItems(array);
-  }, [documents]);
+    setItems(documents);
+  }, [navigationDocuments]);
 
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({
@@ -95,17 +94,11 @@ export const DocumentsList = ({
             level={level}
             onExpand={() => onExpand(document.id)}
             expanded={expanded[document.id]}
-            client={client}
-            onUpdateItems={onUpdateItems}
           />
           {expanded[document.id] && (
             <DocumentsList
-              client={client}
               parentDocumentId={document.id}
               level={level + 1}
-              documents={documents}
-              setDocuments={setDocuments}
-              onUpdateItems={onUpdateItems}
             />
           )}
         </div>
