@@ -2,31 +2,30 @@
 
 import Image from "next/image";
 import { ImageIcon, X } from "lucide-react";
-import { useParams } from "next/navigation";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCoverImage } from "@/hooks/use-cover-image";
 import { useEdgeStore } from "@/lib/edgestore";
-import { Note, NotesClient } from "@/lib/notes-client";
 
 interface CoverImageProps {
-  url?: string;
   preview?: boolean;
-  initialData: Note;
-  client: NotesClient;
+  url?: string;
+  onRemoveCoverImage: () => void,
 }
 
 export const Cover = ({
-  url,
   preview,
-  initialData,
-  client,
+  url,
+  onRemoveCoverImage,
 }: CoverImageProps) => {
   const { edgestore } = useEdgeStore();
-  const params = useParams();
   const coverImage = useCoverImage();
+
+  const onchange = () => {
+    url && coverImage.onReplace(url);
+  }
 
   const onRemove = async () => {
     if (url) {
@@ -34,10 +33,7 @@ export const Cover = ({
         url: url,
       });
     }
-    client.updateNote({
-      ...initialData,
-      id: params.documentId as string,
-    });
+    onRemoveCoverImage()
   };
 
   return (
@@ -52,7 +48,7 @@ export const Cover = ({
       {url && !preview && (
         <div className="opacity-0 group-hover:opacity-100 absolute bottom-5 right-5 flex items-center gap-x-2">
           <Button
-            onClick={() => coverImage.onReplace(url)}
+            onClick={onchange}
             className="text-muted-foreground text-xs"
             variant="outline"
             size="sm"

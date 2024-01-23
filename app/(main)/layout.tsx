@@ -6,7 +6,7 @@ import { Note, NotesClient } from "@/lib/notes-client";
 import { NavigationContextProvider } from "@/contexts/navigation-context";
 import { EditorContextProvider } from "@/contexts/editor-context";
 import { useParams, useRouter } from "next/navigation";
-import debounce from "lodash/debounce";
+import { CoverImageModal } from '@/components/modals/cover-image-modal'
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [notesClient, setNotesClient] = useState<NotesClient>();
@@ -85,28 +85,43 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const onChangeCoverImage = (url: string) => {
+    if (!activeDocument) return;
+
+    onSetActiveDocument({
+      ...activeDocument,
+      coverImage: url,
+    });
+  };
+
   return (
-    <NavigationContextProvider
-      value={{
-        notesClient,
-        navigationDocuments,
-        setNavigationDocuments,
-        onUpdateNavigationDocumentsItems: handleUpdateNavigationDocumentsItems,
-      }}
-    >
-      <EditorContextProvider
+    <>
+      {notesClient && activeDocument && (
+        <CoverImageModal onChangeCoverImage={onChangeCoverImage} />
+      )}
+      <NavigationContextProvider
         value={{
-          activeDocument,
-          setActiveDocument: onSetActiveDocument,
-          refetchActiveDocument,
+          notesClient,
+          navigationDocuments,
+          setNavigationDocuments,
+          onUpdateNavigationDocumentsItems:
+            handleUpdateNavigationDocumentsItems,
         }}
       >
-        <div className="h-full flex dark:bg-[#1F1F1F]">
-          <Navigation />
-          <main className="flex-1 h-full overflow-y-auto">{children}</main>
-        </div>
-      </EditorContextProvider>
-    </NavigationContextProvider>
+        <EditorContextProvider
+          value={{
+            activeDocument,
+            setActiveDocument: onSetActiveDocument,
+            refetchActiveDocument,
+          }}
+        >
+          <div className="h-full flex dark:bg-[#1F1F1F]">
+            <Navigation />
+            <main className="flex-1 h-full overflow-y-auto">{children}</main>
+          </div>
+        </EditorContextProvider>
+      </NavigationContextProvider>
+    </>
   );
 };
 
