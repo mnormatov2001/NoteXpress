@@ -37,6 +37,7 @@ export const Banner = () => {
         isArchived: false,
       });
       onUpdateNavigationDocumentsItems(id);
+      router.push("/documents");
     });
     toast.promise(promise, {
       loading: "Restoring note...",
