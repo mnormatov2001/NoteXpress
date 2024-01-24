@@ -1044,8 +1044,8 @@ export interface Note {
   editDate: Date;
   icon?: string;
   coverImage?: string;
-  isArchived?: boolean;
-  isPublished?: boolean;
+  isArchived: boolean;
+  isPublished: boolean;
 }
 
 export interface ProblemDetails {
