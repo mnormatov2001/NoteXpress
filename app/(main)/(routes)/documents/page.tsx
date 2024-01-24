@@ -1,12 +1,36 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Image from "next/image";
 import { PlusCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useNavigationContext } from '@/contexts/navigation-context'
+
 
 const DocumentsPage = () => {
-  return ( 
+  const router = useRouter();
+  const { notesClient, onUpdateNavigationDocumentsItems } =
+    useNavigationContext();
+
+  const handleCreate = () => {
+    if (!notesClient) return;
+    const promise = notesClient.createNote({
+        title: "Untitled",
+      }).then((id) => {
+        onUpdateNavigationDocumentsItems(id);
+        router.push(`/documents/${id}`)
+      });
+
+    toast.promise(promise, {
+      loading: "Creating a new note...",
+      success: "New note created!",
+      error: "Failed to create a new note.",
+    });
+  };
+
+  return (
     <div className="h-full flex flex-col items-center justify-center space-y-4">
       <Image
         src="/empty.png"
@@ -25,7 +49,7 @@ const DocumentsPage = () => {
       <h2 className="text-lg font-medium">
         Welcome to NoteXpress
       </h2>
-      <Button onClick={() => {}}>
+      <Button onClick={handleCreate}>
         <PlusCircle className="h-4 w-4 mr-2" />
         Create a note
       </Button>
