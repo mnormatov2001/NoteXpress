@@ -10,7 +10,8 @@ import { useEditorContext } from "@/contexts/editor-context";
 
 
 export const Banner = () => {
-  const { notesClient, onUpdateNavigationDocumentsItems } = useNavigationContext();
+  const { notesClient, onUpdateNavigationDocumentsItems } =
+    useNavigationContext();
   const { activeDocument, setActiveDocument } = useEditorContext();
   const router = useRouter();
 
@@ -31,11 +32,11 @@ export const Banner = () => {
     if (!notesClient || !activeDocument) return;
 
     const promise = notesClient.restoreNote(activeDocument.id).then((id) => {
-      onUpdateNavigationDocumentsItems(id);
       setActiveDocument({
         ...activeDocument,
         isArchived: false,
       });
+      onUpdateNavigationDocumentsItems(id);
     });
     toast.promise(promise, {
       loading: "Restoring note...",

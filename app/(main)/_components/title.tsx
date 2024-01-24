@@ -10,15 +10,12 @@ import { useEditorContext } from "@/contexts/editor-context";
 export const Title = () => {
   const { activeDocument, setActiveDocument } = useEditorContext();
   const inputRef = useRef<HTMLInputElement>(null);
-
-  if (!activeDocument) {
-    return <Title.Skeleton />;
-  }
-
-  const [title, setTitle] = useState(activeDocument.title || "Untitled");
+  const [title, setTitle] = useState(activeDocument?.title || "Untitled");
   const [isEditing, setIsEditing] = useState(false);
 
   const enableInput = () => {
+    if (!activeDocument) return;
+
     if (activeDocument.isArchived) {
       setIsEditing(false);
       return;
@@ -39,6 +36,8 @@ export const Title = () => {
   };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!activeDocument) return;
+
     const value = event.target.value || "Untitled";
     setTitle(value);
     setActiveDocument({
@@ -52,6 +51,10 @@ export const Title = () => {
       disableInput();
     }
   };
+
+  if (!activeDocument) {
+    return <Title.Skeleton />;
+  }
 
   return (
     <div className="flex items-center gap-x-1">

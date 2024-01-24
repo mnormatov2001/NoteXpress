@@ -38,14 +38,14 @@ export const DocumentsList = ({
         );
       });
     }
-  }, []);
+  }, [notesClient, parentDocumentId]);
 
   useEffect(() => {
     const documents = navigationDocuments
       ?.filter((item) => item.parentNoteId === parentDocumentId)
       .sort((a, b) => (a.creationDate < b.creationDate ? -1 : 1));
     setItems(documents);
-  }, [navigationDocuments]);
+  }, [navigationDocuments, parentDocumentId]);
 
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({

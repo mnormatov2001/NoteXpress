@@ -34,8 +34,7 @@ export class NotesClient extends NotesClientBase {
    */
   getNote(id: string): Promise<Note> {
     let url_ = this.baseUrl + "/notes/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
+    validateGuid(id, "id");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
     url_ = url_.replace(/[?&]$/, "");
 
@@ -143,8 +142,7 @@ export class NotesClient extends NotesClientBase {
    */
   deleteNote(id: string): Promise<string> {
     let url_ = this.baseUrl + "/notes/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
+    validateGuid(id, "id");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
     url_ = url_.replace(/[?&]$/, "");
 
@@ -252,8 +250,7 @@ export class NotesClient extends NotesClientBase {
    */
   archiveNote(id: string): Promise<string> {
     let url_ = this.baseUrl + "/notes/archive?";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
+    validateGuid(id, "id");
     url_ += "id=" + encodeURIComponent("" + id) + "&";
     url_ = url_.replace(/[?&]$/, "");
 
@@ -361,8 +358,7 @@ export class NotesClient extends NotesClientBase {
    */
   restoreNote(id: string): Promise<string> {
     let url_ = this.baseUrl + "/notes/restore?";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
+    validateGuid(id, "id");
     url_ += "id=" + encodeURIComponent("" + id) + "&";
     url_ = url_.replace(/[?&]$/, "");
 
@@ -466,9 +462,9 @@ export class NotesClient extends NotesClientBase {
 
   /**
    * Updates the note
-   * @param body (optional)
+   * @param body UpdateNoteDto
    */
-  updateNote(body: UpdateNoteDto | undefined): Promise<string> {
+  updateNote(body: UpdateNoteDto): Promise<string> {
     let url_ = this.baseUrl + "/notes/update";
     url_ = url_.replace(/[?&]$/, "");
 
@@ -576,9 +572,9 @@ export class NotesClient extends NotesClientBase {
 
   /**
    * Creates the note
-   * @param body (optional) CreateNoteDto
+   * @param body CreateNoteDto
    */
-  createNote(body: CreateNoteDto | undefined): Promise<string> {
+  createNote(body: CreateNoteDto): Promise<string> {
     let url_ = this.baseUrl + "/notes/create";
     url_ = url_.replace(/[?&]$/, "");
 
@@ -672,10 +668,10 @@ export class NotesClient extends NotesClientBase {
    */
   childrenCount(parentNoteId: string | undefined): Promise<number> {
     let url_ = this.baseUrl + "/notes/children/count?";
-    if (parentNoteId === null)
-      throw new Error("The parameter 'parentNoteId' cannot be null.");
-    else if (parentNoteId !== undefined)
+    if (parentNoteId !== undefined) {
+      validateGuid(parentNoteId, "parentNoteId");
       url_ += "parentNoteId=" + encodeURIComponent("" + parentNoteId) + "&";
+    }
     url_ = url_.replace(/[?&]$/, "");
 
     let options_: RequestInit = {
@@ -764,10 +760,10 @@ export class NotesClient extends NotesClientBase {
    */
   getChildren(parentNoteId: string | undefined): Promise<Note[]> {
     let url_ = this.baseUrl + "/notes/children?";
-    if (parentNoteId === null)
-      throw new Error("The parameter 'parentNoteId' cannot be null.");
-    else if (parentNoteId !== undefined)
+    if (parentNoteId !== undefined) {
+      validateGuid(parentNoteId, "parentNoteId");
       url_ += "parentNoteId=" + encodeURIComponent("" + parentNoteId) + "&";
+    }
     url_ = url_.replace(/[?&]$/, "");
 
     let options_: RequestInit = {
@@ -1111,4 +1107,14 @@ function throwException(
   result?: any
 ): any {
   throw new NotesApiException(message, status, response, headers, result);
+}
+
+function validateGuid(guid: string, parameterName: string) {
+  var pattern =
+    /^[0-9A-Fa-f]{8}\-[0-9A-Fa-f]{4}\-[0-9A-Fa-f]{4}\-[0-9A-Fa-f]{4}\-[0-9A-Fa-f]{12}$/i;
+  if (guid === null || guid === undefined) {
+    throw new Error(`The parameter '${parameterName}' must be defined`);
+  } else if (!pattern.test(guid)) {
+    throw new Error(`The parameter '${parameterName}' is not valid guid string. GUID: ${guid}`);
+  }
 }

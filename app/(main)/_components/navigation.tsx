@@ -1,6 +1,6 @@
 "use client";
 
-import { ElementRef, useEffect, useRef, useState } from "react";
+import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -68,13 +68,7 @@ export const Navigation = () => {
     });
   };
 
-  useEffect(() => {
-    if (isMobile) {
-      collapse();
-    } else {
-      resetWidth();
-    }
-  }, [isMobile]);
+  
 
   useEffect(() => {
     if (isMobile) {
@@ -113,7 +107,7 @@ export const Navigation = () => {
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
-  const resetWidth = () => {
+  const resetWidth = useCallback(() => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(false);
       setIsResetting(true);
@@ -123,13 +117,10 @@ export const Navigation = () => {
         "width",
         isMobile ? "0" : "calc(100% - 240px)"
       );
-      navbarRef.current.style.setProperty(
-        "left",
-        isMobile ? "100%" : "240px"
-      );
+      navbarRef.current.style.setProperty("left", isMobile ? "100%" : "240px");
       setTimeout(() => setIsResetting(false), 300);
     }
-  };
+  }, [isMobile]);
 
   const collapse = () => {
     if (sidebarRef.current && navbarRef.current) {
@@ -141,7 +132,15 @@ export const Navigation = () => {
       navbarRef.current.style.setProperty("left", "0");
       setTimeout(() => setIsResetting(false), 300);
     }
-  }
+  };
+
+  useEffect(() => {
+    if (isMobile) {
+      collapse();
+    } else {
+      resetWidth();
+    }
+  }, [isMobile, resetWidth]);
 
   return (
     <>
