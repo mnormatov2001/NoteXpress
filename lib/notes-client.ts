@@ -1020,6 +1020,93 @@ export class NotesClient extends NotesClientBase {
     return Promise.resolve<Note[]>(null as any);
   }
 
+  /**
+   * Gets publlic note by id
+   * @param id Note id (guid)
+   */
+  getPublicNote(id: string): Promise<Note> {
+    let url_ = this.baseUrl + "/notes/public/{id}";
+    validateGuid(id, "id");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+    url_ = url_.replace(/[?&]$/, "");
+
+    let options_: RequestInit = {
+      method: "GET",
+      headers: {
+        Accept: "Application/json",
+      },
+    };
+
+    return this.http.fetch(url_, options_)
+      .then((_response: Response) => {
+        return this.processGetPublicNote(_response);
+      });
+  }
+
+  protected processGetPublicNote(response: Response): Promise<Note> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+    }
+    if (status === 404) {
+      return response.text().then((_responseText) => {
+        let result404: any = null;
+        result404 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as ProblemDetails);
+        return throwException(
+          "The requested note is not found",
+          status,
+          _responseText,
+          _headers,
+          result404
+        );
+      });
+    } else if (status === 400) {
+      return response.text().then((_responseText) => {
+        let result400: any = null;
+        result400 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as ProblemDetails);
+        return throwException(
+          "The request is not validated",
+          status,
+          _responseText,
+          _headers,
+          result400
+        );
+      });
+    } else if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(_responseText, this.jsonParseReviver) as Note);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
+    }
+    return Promise.resolve<Note>(null as any);
+  }
+
   debouncedUpdateNote = debounce(async (note: UpdateNoteDto) => {
     return await this.updateNote(note);
   }, 500);

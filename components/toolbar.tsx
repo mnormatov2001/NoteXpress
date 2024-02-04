@@ -12,9 +12,9 @@ import { Note } from "@/lib/notes-client";
 interface ToolbarProps {
   preview?: boolean;
   initialData: Note;
-  onIconSelect: (icon: string) => void;
-  onRemoveIcon: () => void;
-  onTitleChange: (title: string) => void;
+  onIconSelect?: (icon: string) => void;
+  onRemoveIcon?: () => void;
+  onTitleChange?: (title: string) => void;
 }
 
 export function Toolbar({
@@ -44,7 +44,7 @@ export function Toolbar({
   const onInputTitle = (value: string) => {
     const title = value || "Untitled";
     setTitle(value);
-    onTitleChange(title);
+    onTitleChange?.(title);
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -58,13 +58,13 @@ export function Toolbar({
     <div className="pl-[54px] group relative">
       {!!initialData.icon && !preview && (
         <div className="flex items-center gap-x-2 group/icon pt-6">
-          <IconPicker onChange={onIconSelect}>
+          <IconPicker onChange={(icon) => onIconSelect?.(icon)}>
             <p className="text-6xl hover:opacity-75 transition">
               {initialData.icon}
             </p>
           </IconPicker>
           <Button
-            onClick={onRemoveIcon}
+            onClick={() => onRemoveIcon?.()}
             className="rounded-full opacity-0 group-hover/icon:opacity-100 transition text-muted-foreground text-xs"
             variant="outline"
             size="icon"
@@ -78,7 +78,7 @@ export function Toolbar({
       )}
       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-x-1 py-4">
         {!initialData.icon && !preview && (
-          <IconPicker asChild onChange={onIconSelect}>
+          <IconPicker asChild onChange={(icon) => onIconSelect?.(icon)}>
             <Button
               className="text-muted-foreground text-xs"
               variant="outline"
