@@ -7,17 +7,26 @@ import TextareaAutosize from "react-textarea-autosize";
 import { useCoverImage } from "@/hooks/use-cover-image";
 import { Button } from "@/components/ui/button";
 import { IconPicker } from "./icon-picker";
-import { useEditorContext } from "@/contexts/editor-context";
+import { Note } from "@/lib/notes-client";
 
 interface ToolbarProps {
   preview?: boolean;
+  initialData: Note;
+  onIconSelect: (icon: string) => void;
+  onRemoveIcon: () => void;
+  onTitleChange: (title: string) => void;
 }
 
-export function Toolbar({ preview }: ToolbarProps) {
+export function Toolbar({
+  preview,
+  initialData,
+  onIconSelect,
+  onRemoveIcon,
+  onTitleChange,
+}: ToolbarProps) {
   const inputRef = useRef<ElementRef<"textarea">>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const { activeDocument, setActiveDocument } = useEditorContext();
-  const [title, setTitle] = useState(activeDocument?.title || "Untitled");
+  const [title, setTitle] = useState(initialData?.title || "Untitled");
   const coverImage = useCoverImage();
 
   const enableInput = () => {
@@ -25,7 +34,7 @@ export function Toolbar({ preview }: ToolbarProps) {
 
     setIsEditing(true);
     setTimeout(() => {
-      setTitle(activeDocument?.title || "Untitled");
+      setTitle(initialData.title);
       inputRef.current?.focus();
     }, 0);
   };
@@ -33,13 +42,9 @@ export function Toolbar({ preview }: ToolbarProps) {
   const disableInput = () => setIsEditing(false);
 
   const onInputTitle = (value: string) => {
-    if (!activeDocument) return;
-
+    const title = value || "Untitled";
     setTitle(value);
-    setActiveDocument({
-      ...activeDocument,
-      title: value || "Untitled",
-    });
+    onTitleChange(title);
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -49,35 +54,13 @@ export function Toolbar({ preview }: ToolbarProps) {
     }
   };
 
-  const onIconSelect = (icon: string) => {
-    if (!activeDocument) return;
-
-    setActiveDocument({
-      ...activeDocument,
-      icon,
-    });
-  };
-
-  const onRemoveIcon = () => {
-    if (!activeDocument) return;
-
-    setActiveDocument({
-      ...activeDocument,
-      icon: undefined,
-    });
-  };
-
-  if (!activeDocument) {
-    return;
-  }
-
   return (
     <div className="pl-[54px] group relative">
-      {!!activeDocument.icon && !preview && (
+      {!!initialData.icon && !preview && (
         <div className="flex items-center gap-x-2 group/icon pt-6">
           <IconPicker onChange={onIconSelect}>
             <p className="text-6xl hover:opacity-75 transition">
-              {activeDocument.icon}
+              {initialData.icon}
             </p>
           </IconPicker>
           <Button
@@ -90,11 +73,11 @@ export function Toolbar({ preview }: ToolbarProps) {
           </Button>
         </div>
       )}
-      {!!activeDocument.icon && preview && (
-        <p className="text-6xl pt-6">{activeDocument.icon}</p>
+      {!!initialData.icon && preview && (
+        <p className="text-6xl pt-6">{initialData.icon}</p>
       )}
       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-x-1 py-4">
-        {!activeDocument.icon && !preview && (
+        {!initialData.icon && !preview && (
           <IconPicker asChild onChange={onIconSelect}>
             <Button
               className="text-muted-foreground text-xs"
@@ -106,7 +89,7 @@ export function Toolbar({ preview }: ToolbarProps) {
             </Button>
           </IconPicker>
         )}
-        {!activeDocument.coverImage && !preview && (
+        {!initialData.coverImage && !preview && (
           <Button
             onClick={coverImage.onOpen}
             className="text-muted-foreground text-xs"
@@ -132,7 +115,7 @@ export function Toolbar({ preview }: ToolbarProps) {
           onClick={enableInput}
           className="pb-[11.5px] text-5xl font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF]"
         >
-          {activeDocument.title}
+          {initialData.title}
         </div>
       )}
     </div>

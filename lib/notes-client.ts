@@ -1022,7 +1022,7 @@ export class NotesClient extends NotesClientBase {
 
   debouncedUpdateNote = debounce(async (note: UpdateNoteDto) => {
     return await this.updateNote(note);
-  }, 700);
+  }, 500);
 }
 
 export interface CreateNoteDto {

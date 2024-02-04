@@ -12,7 +12,7 @@ import { useEdgeStore } from "@/lib/edgestore";
 interface CoverImageProps {
   preview?: boolean;
   url?: string;
-  onRemoveCoverImage: () => void,
+  onRemoveCoverImage?: () => void,
 }
 
 export const Cover = ({
@@ -33,7 +33,7 @@ export const Cover = ({
         url: url,
       });
     }
-    onRemoveCoverImage()
+    onRemoveCoverImage?.();
   };
 
   return (

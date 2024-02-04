@@ -8,7 +8,7 @@ import "@blocknote/core/style.css";
 import { useEdgeStore } from "@/lib/edgestore";
 
 interface EditorProps {
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   initialContent?: string;
   editable?: boolean;
 }
@@ -31,7 +31,7 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
       ? (JSON.parse(initialContent) as PartialBlock[])
       : undefined,
     onEditorContentChange: (editor) => {
-      onChange(JSON.stringify(editor.topLevelBlocks, null, 2));
+      onChange?.(JSON.stringify(editor.topLevelBlocks, null, 2));
     },
     uploadFile: handleUpload,
   });
