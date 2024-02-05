@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { Emoji } from "emoji-picker-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -118,8 +119,11 @@ export const Item = ({
         </div>
       )}
       {documentIcon ? (
-        <div className="shrink-0 mr-2 text-[18px]">
-          {documentIcon}
+        <div className="shrink-0 mr-2">
+          <Emoji
+            unified={documentIcon.codePointAt(0)?.toString(16)!}
+            size={20}
+           />
         </div>
       ) : (
         <Icon 

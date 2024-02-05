@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { File } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { Emoji } from "emoji-picker-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -66,9 +67,12 @@ export const SearchCommand = () => {
               onSelect={() => onSelect(document.id)}
             >
               {document.icon ? (
-                <p className="mr-2 text-[18px]">
-                  {document.icon}
-                </p>
+                <div className="mr-2">
+                  <Emoji
+                    unified={document.icon.codePointAt(0)?.toString(16)!}
+                    size={20}
+                  />
+                </div>
               ) : (
                 <File className="mr-2 h-4 w-4" />
               )}

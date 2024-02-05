@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Emoji } from "emoji-picker-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEditorContext } from "@/contexts/editor-context";
 
@@ -58,7 +59,12 @@ export const Title = () => {
 
   return (
     <div className="flex items-center gap-x-1">
-      {!!activeDocument.icon && <p>{activeDocument.icon}</p>}
+      {!!activeDocument.icon && (
+        <Emoji
+          unified={activeDocument.icon.codePointAt(0)?.toString(16)!}
+          size={20}
+        />
+      )}
       {isEditing ? (
         <Input
           ref={inputRef}

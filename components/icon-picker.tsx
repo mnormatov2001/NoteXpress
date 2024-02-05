@@ -1,6 +1,6 @@
 "use client";
 
-import EmojiPicker, { Theme } from "emoji-picker-react";
+import { Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
 
 import {
@@ -8,6 +8,8 @@ import {
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover";
+import { lazy } from "react";
+const EmojiPicker = lazy(() => import("emoji-picker-react"))
 
 interface IconPickerProps {
   onChange: (icon: string) => void;

@@ -3,6 +3,7 @@
 import { ElementRef, useRef, useState } from "react";
 import { ImageIcon, Smile, X } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
+import { Emoji } from "emoji-picker-react";
 
 import { useCoverImage } from "@/hooks/use-cover-image";
 import { Button } from "@/components/ui/button";
@@ -59,9 +60,12 @@ export function Toolbar({
       {!!initialData.icon && !preview && (
         <div className="flex items-center gap-x-2 group/icon pt-6">
           <IconPicker onChange={(icon) => onIconSelect?.(icon)}>
-            <p className="text-6xl hover:opacity-75 transition">
-              {initialData.icon}
-            </p>
+            <div className="hover:opacity-75 transition">
+              <Emoji
+                unified={initialData.icon.codePointAt(0)?.toString(16)!}
+                size={60}
+              />
+            </div>
           </IconPicker>
           <Button
             onClick={() => onRemoveIcon?.()}
@@ -74,7 +78,12 @@ export function Toolbar({
         </div>
       )}
       {!!initialData.icon && preview && (
-        <p className="text-6xl pt-6">{initialData.icon}</p>
+        <div className="pt-6">
+          <Emoji
+            unified={initialData.icon.codePointAt(0)?.toString(16)!}
+            size={60}
+          />
+        </div>
       )}
       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-x-1 py-4">
         {!initialData.icon && !preview && (
