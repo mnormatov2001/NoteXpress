@@ -19,15 +19,24 @@ interface DocumentIdPageProps {
 const DocumentIdPage = ({
   params
 }: DocumentIdPageProps) => {
+  const { notesClient } = useNavigationContext();
   const { activeDocument, setActiveDocument } = useEditorContext();
   const [editorKey, setEditorKey] = useState(0);
+  const [initialized, setInitialized] = useState(false);
   const Editor = useMemo(
     () => dynamic(() => import("@/components/editor"), { ssr: false }),
     [editorKey]
   );
-  const { notesClient } = useNavigationContext();
 
   useEffect(() => {
+    setTimeout(() => {
+      setInitialized(true);
+    }, 300);
+  }, []);
+
+  useEffect(() => {
+    if (!initialized) return;
+
     debouncedSetEditorKey(setEditorKey);
   }, [activeDocument?.icon, activeDocument?.title]);
   
