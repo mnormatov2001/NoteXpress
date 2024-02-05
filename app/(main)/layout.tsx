@@ -6,7 +6,7 @@ import { Note, NotesClient } from "@/lib/notes-client";
 import { NavigationContextProvider } from "@/contexts/navigation-context";
 import { EditorContextProvider } from "@/contexts/editor-context";
 import { useParams, useRouter } from "next/navigation";
-import { CoverImageModal } from '@/components/modals/cover-image-modal'
+import { CoverImageModal } from "@/components/modals/cover-image-modal";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [notesClient, setNotesClient] = useState<NotesClient>();
@@ -17,7 +17,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [activeDocument, setActiveDocument] = useState<Note>();
 
   useEffect(() => {
-    setNotesClient(new NotesClient("https://localhost:7090"));
+    setNotesClient(new NotesClient(process.env.NEXT_PUBLIC_API_URL));
   }, []);
 
   useEffect(() => {

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Cover } from "@/components/cover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Note, NotesClient } from "@/lib/notes-client";
-import { Toolbar } from '@/components/toolbar'
+import { Toolbar } from "@/components/toolbar";
 
 interface DocumentIdPageProps {
   params: {
@@ -22,7 +22,7 @@ const DocumentIdPage = ({
   const [document, setDocument] = useState<Note | null | undefined>(undefined);
 
   useEffect(() => {
-    setNotesClient(new NotesClient("https://localhost:7090"));
+    setNotesClient(new NotesClient(process.env.NEXT_PUBLIC_API_URL));
   }, []);
 
   useEffect(() => {
