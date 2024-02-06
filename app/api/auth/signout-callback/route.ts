@@ -14,3 +14,5 @@ export async function GET(req: NextRequest) {
 
   redirect("/");
 }
+
+export const dynamic = "force-dynamic";

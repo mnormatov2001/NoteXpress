@@ -28,3 +28,5 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.redirect(process.env.NEXTAUTH_URL!);
 }
+
+export const dynamic = "force-dynamic";
