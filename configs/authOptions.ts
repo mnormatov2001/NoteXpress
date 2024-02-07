@@ -19,7 +19,7 @@ export const authOptions: AuthOptions = {
       issuer: "https://localhost:7291",
     }),
   ],
-  debug: true,
+  debug: false,
   callbacks: {
     jwt: async ({ token, account, user }) => {
       if (account) {
@@ -68,7 +68,7 @@ async function refreshAccessToken(token: JWT) {
       throw refreshedTokens;
     }
 
-    console.log("REFRESHED !!!");
+    console.log("ACCESS TOKEN SUCCESSFULLY REFRESHED !!!");
 
     return {
       ...token,

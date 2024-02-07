@@ -52,9 +52,12 @@ export const Navbar = () => {
             </Button>
             <Button
               size="sm"
-              onClick={() => {
+              onClick={(event) => {
+                event.preventDefault();
                 router.push("/api/auth/federated-logout");
-                signOut({ callbackUrl: "/", redirect: false });
+                setTimeout(() => {
+                  signOut({ callbackUrl: "/", redirect: false });
+                }, 200);
               }}
             >
               Sing Out

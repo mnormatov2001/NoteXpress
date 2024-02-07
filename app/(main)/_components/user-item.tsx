@@ -79,9 +79,12 @@ export const UserItem = () => {
           className="w-full cursor-pointer text-muted-foreground"
         >
           <Button
-            onClick={() => {
+            onClick={(event) => {
+              event.preventDefault();
               router.push("/api/auth/federated-logout");
+              setTimeout(() => {
                 signOut({ callbackUrl: "/", redirect: false });
+              }, 200);
             }}
             variant="ghost"
             size="sm"
