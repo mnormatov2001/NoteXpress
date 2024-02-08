@@ -15,8 +15,14 @@ export const authOptions: AuthOptions = {
           response_type: "code",
         },
       },
-      name: "my_auth0",
-      issuer: "https://localhost:7291",
+      issuer: process.env.IDP_URL,
+      profile(profile, tokens) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.preferred_username,
+        };
+      },
     }),
   ],
   debug: false,
@@ -38,6 +44,8 @@ export const authOptions: AuthOptions = {
     },
     session: ({ session, user, token }) => {
       session.accessToken = token.accessToken;
+      session.idToken = token.idToken;
+      session.refreshToken = token.refreshToken;
       session.user = token.user;
       return session;
     },

@@ -11,16 +11,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { federatedLogout } from "@/app/actions";
 
 export const UserItem = () => {
   const router = useRouter();
-  const user = {
-    fullName: "Muza Norm",
-    imageUrl: undefined,
-    email: "muza@norm.com",
-  };
+  const session = useSession();
+
+  if (session.status !== "authenticated") {
+    return <Skeleton className="h-4 w-7" />
+  }
 
   return (
     <DropdownMenu>
@@ -33,7 +35,7 @@ export const UserItem = () => {
             <Avatar className="h-5 w-5 rounded-sm">
               <AvatarImage
                 className="rounded-sm"
-                src={user.imageUrl}
+                src={session.data.user.image || undefined}
                 alt="@shadcn"
               />
               <AvatarFallback className="rounded-sm">
@@ -41,7 +43,7 @@ export const UserItem = () => {
               </AvatarFallback>
             </Avatar>
             <span className="text-start font-medium line-clamp-1">
-              {user?.fullName}&apos;s NoteXpress
+              {session.data.user.name}&apos;s NoteXpress
             </span>
           </div>
           <ChevronsLeftRight className="rotate-90 ml-2 text-muted-foreground h-4 w-4" />
@@ -55,12 +57,12 @@ export const UserItem = () => {
       >
         <div className="flex flex-col space-y-4 p-2">
           <p className="text-xs font-medium leading-none text-muted-foreground">
-            {user?.email}
+            {session.data.user.email}
           </p>
           <div className="flex items-center gap-x-2">
             <div className="rounded-md bg-secondary p-1">
               <Avatar className="h-6 w-6">
-                <AvatarImage src={user.imageUrl} alt="@shadcn" />
+                <AvatarImage src={session.data.user.image || undefined} alt="@shadcn" />
                 <AvatarFallback>
                   <User className="text-muted-foreground" />
                 </AvatarFallback>
@@ -68,7 +70,7 @@ export const UserItem = () => {
             </div>
             <div className="space-y-1">
               <p className="text-sm line-clamp-1">
-                {user?.fullName}&apos;s NoteXpress
+                {session.data.user.name}&apos;s NoteXpress
               </p>
             </div>
           </div>
@@ -79,12 +81,10 @@ export const UserItem = () => {
           className="w-full cursor-pointer text-muted-foreground"
         >
           <Button
-            onClick={(event) => {
-              event.preventDefault();
-              router.push("/api/auth/federated-logout");
-              setTimeout(() => {
-                signOut({ callbackUrl: "/", redirect: false });
-              }, 200);
+            onClick={async () => {
+              const logoutUrl = await federatedLogout(session.data);
+              await signOut({ callbackUrl: "/", redirect: false });
+              router.push(logoutUrl || "/");
             }}
             variant="ghost"
             size="sm"

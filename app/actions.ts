@@ -1,44 +1,37 @@
-import { getToken } from "next-auth/jwt";
-import { NextRequest, NextResponse } from "next/server";
+"use server";
 
-export async function GET(req: NextRequest) {
+import { Session } from "next-auth";
+
+export async function federatedLogout(session: Session) {
   try {
-    const token = await getToken({
-      req,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (token?.refreshToken) {
+    if (session.refreshToken) {
       await fetch(process.env.TOKEN_REVOKATION_ENDPOINT!, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           client_id: process.env.CLIENT_ID!,
           token_type_hint: "refresh_token",
-          token: token.refreshToken,
+          token: session.refreshToken,
         }),
         method: "POST",
       });
     }
 
-    if (!token?.idToken) {
+    if (!session.idToken) {
       throw new Error(
         "Without an id_token the user won't be" +
         "redirected back from the IdP after logout."
       );
-    } else if (token.idToken) {
+    } else if (session.idToken) {
       const url =
         process.env.END_SESSION_ENDPOINT +
         "?id_token_hint=" +
-        token.idToken +
+        session.idToken +
         "&post_logout_redirect_uri=" +
         process.env.POST_LOGOUT_REDIRECT_URI;
-
-      return NextResponse.redirect(url);
+      
+      return url;
     }
   } catch (error) {
     console.error(error);
-    return NextResponse.redirect(process.env.NEXTAUTH_URL!);
   }
-}
-
-export const dynamic = "force-dynamic";
+};

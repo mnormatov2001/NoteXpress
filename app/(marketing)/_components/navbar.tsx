@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/spinner";
 import { Logo } from "./logo";
 import { cn } from "@/lib/utils";
+import { federatedLogout } from "@/app/actions";
 
 export const Navbar = () => {
   const router = useRouter();
@@ -52,12 +53,10 @@ export const Navbar = () => {
             </Button>
             <Button
               size="sm"
-              onClick={(event) => {
-                event.preventDefault();
-                router.push("/api/auth/federated-logout");
-                setTimeout(() => {
-                  signOut({ callbackUrl: "/", redirect: false });
-                }, 200);
+              onClick={async () => {
+                const logoutUrl = await federatedLogout(session.data);
+                await signOut({ callbackUrl: "/", redirect: false });
+                router.push(logoutUrl || "/");
               }}
             >
               Sing Out

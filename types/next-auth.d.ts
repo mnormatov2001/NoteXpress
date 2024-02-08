@@ -8,7 +8,9 @@ declare module "next-auth" {
   interface Session {
     /** OpenID Access Token */
     accessToken?: string;
-    user?: User;
+    idToken?: string;
+    refreshToken?: string;
+    user: User;
   }
 
   /**
@@ -17,9 +19,9 @@ declare module "next-auth" {
    */
   interface User {
     id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
+    name: string;
+    email: string;
+    image?: string;
   }
   /**
    * Usually contains information about the provider being used
