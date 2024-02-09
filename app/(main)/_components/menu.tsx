@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { MoreHorizontal, Trash } from "lucide-react";
@@ -20,7 +19,6 @@ export const Menu = () => {
   const { notesClient, navigationDocuments, setNavigationDocuments } = useNavigationContext();
   const { activeDocument } = useEditorContext();
   const router = useRouter();
-  const session = useSession();
 
   const onArchive = () => {
     if (!notesClient || !activeDocument) return;
@@ -54,10 +52,28 @@ export const Menu = () => {
           <Trash className="h-4 w-4 mr-2" />
           Delete
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <div className="text-xs text-muted-foreground p-2">
-          Last edited by: {session?.data?.user?.name}
-        </div>
+        {activeDocument?.creationDate && activeDocument.editDate && (
+          <div>
+            <DropdownMenuSeparator />
+            <div className="text-xs text-muted-foreground px-2 pt-2 pb-1">
+              Created:{" "}
+              {new Date(activeDocument.creationDate).toLocaleString(
+                undefined,
+                {
+                  dateStyle: "short",
+                  timeStyle: "medium",
+                }
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground px-2 pb-2">
+              Last edited:{" "}
+              {new Date(activeDocument.editDate).toLocaleString(undefined, {
+                dateStyle: "short",
+                timeStyle: "medium",
+              })}
+            </div>
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

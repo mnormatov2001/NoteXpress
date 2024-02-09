@@ -86,6 +86,8 @@ export const DocumentsList = ({
         <div key={document.id}>
           <Item
             id={document.id}
+            creationDate={document.creationDate}
+            editDate={document.editDate}
             onClick={() => {router.push(`/documents/${document.id}`)}}
             label={document.title}
             icon={FileIcon}

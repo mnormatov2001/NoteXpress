@@ -44,6 +44,7 @@ export const Title = () => {
     setActiveDocument({
       ...activeDocument,
       title: value,
+      editDate: new Date(),
     });
   };
 

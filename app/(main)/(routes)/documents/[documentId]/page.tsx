@@ -46,6 +46,7 @@ const DocumentIdPage = ({
     setActiveDocument({
       ...activeDocument,
       content,
+      editDate: new Date(),
     });
   };
 
@@ -64,6 +65,7 @@ const DocumentIdPage = ({
     setActiveDocument({
       ...activeDocument,
       icon,
+      editDate: new Date(),
     });
   };
 
@@ -73,6 +75,7 @@ const DocumentIdPage = ({
     setActiveDocument({
       ...activeDocument,
       icon: undefined,
+      editDate: new Date(),
     });
   };
 
@@ -81,6 +84,7 @@ const DocumentIdPage = ({
     setActiveDocument({
       ...activeDocument,
       title,
+      editDate: new Date(),
     });
   };
 
