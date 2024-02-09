@@ -56,6 +56,7 @@ const DocumentIdPage = ({
     setActiveDocument({
       ...activeDocument,
       coverImage: undefined,
+      editDate: new Date(),
     });
   };
 

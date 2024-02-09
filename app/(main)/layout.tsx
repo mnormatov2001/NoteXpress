@@ -89,6 +89,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     onSetActiveDocument({
       ...activeDocument,
       coverImage: url,
+      editDate: new Date(),
     });
   };
 
