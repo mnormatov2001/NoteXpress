@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Navbar } from "./_components/navbar";
 
 const MarketingLayout = ({
@@ -7,10 +8,12 @@ const MarketingLayout = ({
 }) => {
   return ( 
     <div className="h-full dark:bg-[#1F1F1F]">
-      <Navbar />
-      <main className="h-full pt-40">
-        {children}
-      </main>
+      <Suspense>
+        <Navbar />
+        <main className="h-full pt-40">
+          {children}
+        </main>
+      </Suspense>
     </div>
    );
 }
