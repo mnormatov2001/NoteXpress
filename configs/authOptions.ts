@@ -1,6 +1,9 @@
 import { AuthOptions } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import type { JWT } from "next-auth/jwt";
 import Auth0 from "next-auth/providers/auth0";
+
+let tokenRefreshingFlag: "refreshing" | "refreshed" | "none" = "none";
+let refreshedToken: JWT | undefined = undefined;
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -36,11 +39,20 @@ export const authOptions: AuthOptions = {
         token.user = user;
       }
 
-      if (Date.now() < token.accessTokenExpires) {
-        return token;
+      if (
+        tokenRefreshingFlag === "refreshing" ||
+        (tokenRefreshingFlag === "none" && Date.now() < token.accessTokenExpires)
+      ) return token;
+
+      if (tokenRefreshingFlag === "refreshed") {
+        tokenRefreshingFlag = "none";
+        const newToken = refreshedToken ? refreshedToken : token;
+        refreshedToken = undefined;
+        return newToken;
       }
 
-      return await refreshAccessToken(token);
+      refreshAccessToken(token);
+      return token;
     },
     session: ({ session, user, token }) => {
       session.accessToken = token.accessToken;
@@ -57,7 +69,9 @@ export const authOptions: AuthOptions = {
 };
 
 async function refreshAccessToken(token: JWT) {
+  tokenRefreshingFlag = "refreshing";
   console.log("REFRESHING ACCESS TOKEN !!!");
+  console.log("SENDING REFRESH TOKEN: ", token.refreshToken);
   try {
     const response = await fetch(process.env.TOKEN_ENDPOINT!, {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -78,19 +92,22 @@ async function refreshAccessToken(token: JWT) {
 
     console.log("ACCESS TOKEN SUCCESSFULLY REFRESHED !!!");
 
-    return {
+    refreshedToken = {
       ...token,
       idToken: refreshedTokens.id_token,
       accessToken: refreshedTokens.access_token,
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
       refreshToken: refreshedTokens.refresh_token,
     } as JWT;
+
   } catch (error) {
     console.log("FAILED TO REFRESH ACCESS TOKEN\n", error);
-
-    return {
+    refreshedToken = {
       ...token,
       error: "RefreshAccessTokenError",
     } as JWT;
+    
+  } finally {
+    tokenRefreshingFlag = "refreshed";
   }
 }
