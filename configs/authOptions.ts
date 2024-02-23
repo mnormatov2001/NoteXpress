@@ -39,18 +39,23 @@ export const authOptions: AuthOptions = {
         token.user = user;
       }
 
+      console.log("TOKEN_REFRESHING_FLAG: ", tokenRefreshingFlag);
+
       if (
         tokenRefreshingFlag === "refreshing" ||
         (tokenRefreshingFlag === "none" && Date.now() < token.accessTokenExpires)
       ) return token;
 
       if (tokenRefreshingFlag === "refreshed") {
+        console.log("UPDATED REFRESH TOKEN: ", refreshedToken?.refreshToken);
         tokenRefreshingFlag = "none";
         const newToken = refreshedToken ? refreshedToken : token;
         refreshedToken = undefined;
         return newToken;
       }
 
+      console.log("GOING TO REFRESH TOKENS!");
+      tokenRefreshingFlag = "refreshing";
       refreshAccessToken(token);
       return token;
     },
@@ -69,7 +74,6 @@ export const authOptions: AuthOptions = {
 };
 
 async function refreshAccessToken(token: JWT) {
-  tokenRefreshingFlag = "refreshing";
   console.log("REFRESHING ACCESS TOKEN !!!");
   console.log("SENDING REFRESH TOKEN: ", token.refreshToken);
   try {
