@@ -32,17 +32,10 @@ export const Navbar = () => {
         {session.status === "unauthenticated" && (
           <>
             <Button
-              variant="ghost"
               size="sm"
               onClick={() => signIn("auth0", { callbackUrl, redirect: false })}
             >
               Log in
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => signIn("auth0", { callbackUrl, redirect: false })}
-            >
-              Get NoteXpress free
             </Button>
           </>
         )}

@@ -20,7 +20,7 @@ export const Heading = () => {
         <span className="underline">NoteXpress</span>
       </h1>
       <h3 className="text-base sm:text-xl md:text-2xl font-medium">
-        Jotion is the connected workspace where <br />
+        NoteXpress is the connected workspace where <br />
         better, faster work happens.
       </h3>
       {session.status === "loading" && (
@@ -40,7 +40,7 @@ export const Heading = () => {
         <Button
           onClick={() => signIn("auth0", { callbackUrl, redirect: false })}
         >
-          Get NoteXpress free
+          Log in to continue
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
       )}
